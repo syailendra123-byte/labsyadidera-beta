@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Project Showcase</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 60px auto; text-align: center; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    img { border-radius: 50%; width: 60px; }
+  </style>
+</head>
+<body>
+  <div id="app">Memuat...</div>
+
+  <script>
+    // Begitu halaman dibuka, langsung cek status login ke /api/me
+    async function checkLogin() {
+      const res = await fetch("/api/me");
+      const data = await res.json();
+      const app = document.getElementById("app");
+
+      if (data.loggedIn) {
+        // KALAU SUDAH LOGIN: tampilkan konten proyek + tombol logout
+        app.innerHTML = `
+          <img src="${data.user.picture}" alt="foto profil" />
+          <h2>Halo, ${data.user.name} 👋</h2>
+          <p>Kamu sudah login. Ini daftar proyek yang bisa kamu akses:</p>
+          <ul style="text-align:left">
+            <li>Proyek A - HTML/CSS landing page</li>
+            <li>Proyek B - Python script otomasi</li>
+          </ul>
+          <a href="/api/auth/logout"><button>Logout</button></a>
+        `;
+      } else {
+        // KALAU BELUM LOGIN: tampilkan tombol login
+        app.innerHTML = `
+          <h2>Selamat datang di Project Showcase</h2>
+          <p>Silakan login untuk mengakses proyek-proyek di sini.</p>
+          <a href="/api/auth/login"><button>Login dengan Google</button></a>
+        `;
+      }
+    }
+
+    checkLogin();
+  </script>
+</body>
+</html>
