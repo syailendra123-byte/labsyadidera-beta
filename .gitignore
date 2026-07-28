@@ -1,0 +1,17 @@
+# File environment variable ASLI — INI YANG PALING PENTING
+# Jangan sampai file .env kesimpen di GitHub, soalnya isinya Client Secret asli
+.env
+.env.local
+
+# Dependency folder, gak perlu di-push, nanti di-install ulang otomatis
+node_modules/
+
+# File hasil build/cache Vercel
+.vercel
+
+# File sistem operasi yang gak penting
+.DS_Store
+Thumbs.db
+
+# Log file
+*.log
