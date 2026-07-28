@@ -1,0 +1,13 @@
+{
+  "name": "project-showcase",
+  "version": "1.0.0",
+  "description": "Web showcase proyek lama, gated pakai login Google/GitHub OAuth",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "cookie": "^0.6.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
