@@ -19,7 +19,6 @@ export default async function handler(req, res) {
 
   const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
   const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-  const APP_URL = process.env.APP_URL;
   const APP_URL = (process.env.APP_URL || "").replace(/\/+$/, "");
   const redirectUri = `${APP_URL}/api/auth/callback`;
 
