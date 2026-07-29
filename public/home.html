@@ -89,19 +89,17 @@
       const app = document.getElementById("app");
 
       if (!data.loggedIn) {
-        // Belum login (atau session expired) -> paksa balik ke "/"
         window.location.replace("/");
         return;
       }
 
       const user = data.user;
 
-      // Daftar proyek masih hardcode di frontend untuk sekarang.
-      // Nanti bisa lo pindah ke API/DB kalau proyeknya makin banyak.
-      const projects = [
-        { tag: "HTML/CSS", title: "Proyek A", desc: "Landing page statis." },
-        { tag: "Python", title: "Proyek B", desc: "Script otomasi harian." },
-      ];
+      // Ambil daftar proyek SECARA OTOMATIS dari folder public/projects/
+      // lewat endpoint /api/projects (bukan hardcode lagi)
+      const projectsRes = await fetch("/api/projects");
+      const projectsData = await projectsRes.json();
+      const projects = projectsData.projects || [];
 
       app.innerHTML = `
         <div class="topbar">
@@ -119,13 +117,19 @@
         <p class="subtitle">Ini daftar proyek yang bisa kamu akses.</p>
 
         <div class="grid">
-          ${projects.map(p => `
-            <div class="proj-card">
-              <span class="tag">${p.tag}</span>
-              <h3>${p.title}</h3>
-              <p>${p.desc}</p>
-            </div>
-          `).join("")}
+          ${
+            projects.length > 0
+              ? projects.map((p) => `
+                <a href="/projects/${p.slug}" style="text-decoration:none; color:inherit;">
+                  <div class="proj-card">
+                    <span class="tag">${p.tag}</span>
+                    <h3>${p.title}</h3>
+                    <p>${p.description}</p>
+                  </div>
+                </a>
+              `).join("")
+              : `<p style="color:#64748b;">Belum ada proyek yang diupload.</p>`
+          }
         </div>
       `;
     }
