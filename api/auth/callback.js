@@ -88,6 +88,10 @@ export default async function handler(req, res) {
 
     res.setHeader("Set-Cookie", cookie);
 
+    // Setelah login sukses, lempar user ke /home (bukan ke "/" lagi)
+    // supaya landing page tetep bersih khusus buat yang belum login
+    res.redirect(302, "/home");
+
     // Setelah login sukses, lempar user balik ke halaman utama
     res.redirect(302, "/");
   } catch (error) {
