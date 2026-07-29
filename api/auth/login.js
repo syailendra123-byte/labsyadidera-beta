@@ -9,7 +9,6 @@ export default function handler(req, res) {
   // process.env.XXX ini otomatis dibaca Vercel dari Environment Variables
   // yang lo set di dashboard, jadi aman walau kode ini public di GitHub
   const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-  const APP_URL = process.env.APP_URL;
 
   // redirect_uri = URL yang Google bakal panggil balik setelah user login sukses
   // Ini HARUS sama persis dengan yang didaftarin di Google Cloud Console
