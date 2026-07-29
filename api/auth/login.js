@@ -13,6 +13,7 @@ export default function handler(req, res) {
 
   // redirect_uri = URL yang Google bakal panggil balik setelah user login sukses
   // Ini HARUS sama persis dengan yang didaftarin di Google Cloud Console
+  const APP_URL = (process.env.APP_URL || "").replace(/\/+$/, "");
   const redirectUri = `${APP_URL}/api/auth/callback`;
 
   // Susun parameter query buat URL OAuth Google
