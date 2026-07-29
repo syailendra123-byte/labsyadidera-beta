@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Project Showcase</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #f1f5f9;
+      padding: 40px 20px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 16px 24px;
+      margin-bottom: 32px;
+    }
+    .profile { display: flex; align-items: center; gap: 12px; }
+    .profile img {
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 2px solid #38bdf8;
+    }
+    .profile .name { font-weight: 600; font-size: 15px; }
+    .profile .email { font-size: 12px; color: #94a3b8; }
+    .btn-logout {
+      background: rgba(248,113,113,0.12);
+      color: #f87171;
+      border: 1px solid rgba(248,113,113,0.3);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+    .btn-logout:hover { background: rgba(248,113,113,0.22); }
+    h2 { font-size: 20px; margin-bottom: 4px; }
+    .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .proj-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 20px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .proj-card:hover {
+      transform: translateY(-3px);
+      border-color: #38bdf8;
+    }
+    .proj-card .tag {
+      display: inline-block;
+      font-size: 11px;
+      background: rgba(56,189,248,0.15);
+      color: #38bdf8;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    .proj-card h3 { font-size: 16px; margin-bottom: 6px; }
+    .proj-card p { font-size: 13px; color: #94a3b8; }
+    .loading { text-align: center; color: #64748b; padding: 60px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="app" class="loading">Memuat dashboard...</div>
+  </div>
+
+  <script>
+    // Halaman ini WAJIB login. Kalau session gak valid, tendang balik ke landing page.
+    async function loadDashboard() {
+      const res = await fetch("/api/me");
+      const data = await res.json();
+      const app = document.getElementById("app");
+
+      if (!data.loggedIn) {
+        // Belum login (atau session expired) -> paksa balik ke "/"
+        window.location.replace("/");
+        return;
+      }
+
+      const user = data.user;
+
+      // Daftar proyek masih hardcode di frontend untuk sekarang.
+      // Nanti bisa lo pindah ke API/DB kalau proyeknya makin banyak.
+      const projects = [
+        { tag: "HTML/CSS", title: "Proyek A", desc: "Landing page statis." },
+        { tag: "Python", title: "Proyek B", desc: "Script otomasi harian." },
+      ];
+
+      app.innerHTML = `
+        <div class="topbar">
+          <div class="profile">
+            <img src="${user.picture}" alt="foto profil" />
+            <div>
+              <div class="name">${user.name}</div>
+              <div class="email">${user.email}</div>
+            </div>
+          </div>
+          <a class="btn-logout" href="/api/auth/logout">Logout</a>
+        </div>
+
+        <h2>Halo, ${user.name.split(" ")[0]}</h2>
+        <p class="subtitle">Ini daftar proyek yang bisa kamu akses.</p>
+
+        <div class="grid">
+          ${projects.map(p => `
+            <div class="proj-card">
+              <span class="tag">${p.tag}</span>
+              <h3>${p.title}</h3>
+              <p>${p.desc}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
