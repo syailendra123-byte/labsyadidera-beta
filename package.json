@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Web showcase proyek lama, gated pakai login Google/GitHub OAuth",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "vercel dev"
   },
