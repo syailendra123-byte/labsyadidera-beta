@@ -1,12 +1,12 @@
 # labsyadidera-beta
 
-> Portfolio digital berisi kumpulan project pribadi yang pernah aku bangun — daripada numpuk di laptop, mending dipajang di sini. 🗂️
+> Portfolio digital berisi kumpulan project pribadi yang pernah aku bangun. daripada numpuk di laptop, lebih baik dipajang di sini. Siapa tau ada yang perlu?
 
-Status: **🚧 Beta** masih proses upload & migrasi project satu-satu dan masih masa pengujian
+Status: **🚧 Beta** masih proses upload & migrasi project satu-satu dan masih masa pengujian. Setiap kode memiliki struktur yang berbeda beda, jadi perlu penyesuaian untuk agar bisa dijalankan dengan baik disini.
 
 ## Tentang
 
-Web ini adalah galeri dari berbagai eksperimen dan tools yang pernah aku bikin — mulai dari web app, script otomasi, sampai utility kecil-kecilan. Sebagian besar dibangun buat belajar atau nyelesain masalah sehari-hari sendiri.
+Web ini adalah galeri dari berbagai eksperimen dan tools yang pernah aku bikin. mulai dari web app, script otomasi, sampai utility kecil-kecilan. Sebagian besar dibangun buat belajar atau nyelesain masalah sehari-hari sendiri.
 
 ## Fitur Akses (Saat ini belum ada)
 
@@ -14,9 +14,9 @@ Web ini punya sistem akses bertingkat buat tiap project yang dipajang:
 
 | Level | Cara Akses | Yang Bisa Dilihat |
 |---|---|---|
-| **Public** | Tanpa login | Screenshot & deskripsi project |
-| **Normal Access** | Login Google | Source code frontend (HTML/CSS/JS) |
-| **Dev Access** | Login GitHub | View source lengkap + download source backend (Python, Node.js, Bash, Batch, dll) |
+| **Public** | Tanpa login | Source code frontend (HTML/CSS/JS) yang mudah dan ringan |
+| **User** | Login dengan Google | Source code frontend (HTML/CSS/JS) kompleks |
+| **Dev** | Login dengan GitHub | View source lengkap + download source backend (Python, Node.js, Bash, Batch, dll) |
 
 ## Tech Stack
 
@@ -34,8 +34,8 @@ Web ini punya sistem akses bertingkat buat tiap project yang dipajang:
 
 ## Disclaimer
 
-Ini project personal buat dokumentasi & pembelajaran. Kode di sini mungkin masih belum sempurna — feel free explore, tapi pakai dengan bijak ya. 😄
+Ini project personal buat dokumentasi & pembelajaran. Kode di sini mungkin masih belum sempurna. Jadinya feel free explore, tapi pakai dengan bijak ya. 😄
 
 ---
 
-Dibuat dengan ☕ oleh [syailendra123-byte](https://github.com/syailendra123-byte)
+Dibuat oleh [syailendra123-byte](https://github.com/syailendra123-byte)
