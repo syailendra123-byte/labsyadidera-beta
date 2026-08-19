@@ -15,7 +15,7 @@ Web ini punya sistem akses bertingkat buat tiap project yang dipajang:
 | Level | Cara Akses | Yang Bisa Dilihat |
 |---|---|---|
 | **Public** | Tanpa login | Source code frontend (HTML/CSS/JS) yang mudah dan ringan |
-| **User** | Login dengan Google | Source code frontend (HTML/CSS/JS) kompleks |
+| **User** | Login dengan Google | Source code frontend (HTML/CSS/JS) kompleks dan lebih berfungsi |
 | **Dev** | Login dengan GitHub | View source lengkap + download source backend (Python, Node.js, Bash, Batch, dll) |
 
 ## Tech Stack

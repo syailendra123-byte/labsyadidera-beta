@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/topicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sy Markitdown | LabSyadidera</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- ============================================================
+       LIBRARY CONVERTER, semua diambil dari CDN (bukan dari npm),
+       soalnya proyek ini statis dan gak lewat proses build.
+       - mammoth   -> baca isi .docx (Word)
+       - turndown  -> ubah HTML jadi Markdown (dipake buat Word & HTML)
+       - xlsx      -> baca isi .xlsx/.xls (SheetJS)
+       - jszip     -> buka isi .pptx (PowerPoint itu sebenernya file zip)
+       - pdfjs     -> extract teks dari .pdf
+       ============================================================ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.2.0/turndown.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <div class="topbar">
+      <a class="back-link" href="/home">&larr; Balik ke Dashboard</a>
+    </div>
+
+    <div class="hero">
+      <div class="hero-eyebrow">sy.markitdown<span class="cursor"></span></div>
+      <h1>File <span class="arrow">&rarr;</span> Markdown</h1>
+      <p>
+        Letakkan file Word, PDF, Excel, PowerPoint, Text, HTML, atau JSON di bawah.
+        Semua proses konversi jalan langsung di browser, jadi tidak ada satu byte pun
+        yang dikirim ke server.
+      </p>
+      <div class="privacy-note">🔒 100% client-side, file tidak akan upload ke server</div>
+    </div>
+
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-icon">[ drag &amp; drop / klik buat pilih file ]</div>
+      <h3>Taruh file lo di sini</h3>
+      <p>Bisa lebih dari satu file sekaligus</p>
+      <div class="formats">
+        <span class="format-chip">.docx</span>
+        <span class="format-chip">.pdf</span>
+        <span class="format-chip">.xlsx / .xls</span>
+        <span class="format-chip">.pptx</span>
+        <span class="format-chip">.txt</span>
+        <span class="format-chip">.html</span>
+        <span class="format-chip">.json</span>
+      </div>
+      <input type="file" id="fileInput" multiple
+             accept=".docx,.pdf,.xlsx,.xls,.pptx,.txt,.html,.htm,.json" />
+    </div>
+
+    <div class="results" id="results"></div>
+    <p class="empty-hint" id="emptyHint">Belum ada file yang dikonversi.</p>
+
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
