@@ -39,7 +39,7 @@ function generateTanggalMundur(jumlahHari) {
 }
 
 async function fetchRealRates() {
-  const url = `api`;
+  const url = `/api/projects/Simulasi-perkuat-Rupiah`;
   const res = await fetch(url);
 
   if (!res.ok) {
