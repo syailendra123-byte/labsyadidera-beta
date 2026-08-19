@@ -39,7 +39,7 @@ function generateTanggalMundur(jumlahHari) {
 }
 
 async function fetchRealRates() {
-  const url = `/api`;
+  const url = `api`;
   const res = await fetch(url);
 
   if (!res.ok) {
