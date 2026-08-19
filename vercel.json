@@ -1,5 +1,11 @@
 {
   "outputDirectory": "public",
   "cleanUrls": true,
-  "trailingSlash": true
+  "trailingSlash": true,
+  "rewrites": [
+    {
+      "source": "/projects/:slug/api/:path*",
+      "destination": "/api/projects/:slug/:path*"
+    }
+  ]
 }
