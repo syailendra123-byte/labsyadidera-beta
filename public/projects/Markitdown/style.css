@@ -1,0 +1,287 @@
+/* ==========================================================================
+   MARKITDOWN — style.css
+   Palet & token warna SENGAJA disamain persis sama public/home.html &
+   public/index.html biar keliatan satu keluarga situs, bukan "proyek nempel".
+   ========================================================================== */
+
+:root {
+  /* --- Token warna, diambil dari home.html biar konsisten se-situs --- */
+  --bg-1: #0f172a;
+  --bg-2: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent-cyan: #38bdf8;
+  --accent-indigo: #818cf8;
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-border-hover: rgba(56, 189, 248, 0.4);
+  --danger: #f87171;
+  --success: #34d399;
+
+  /* Font monospace jadi "suara" khas tool ini — cocok sama subjeknya
+     (markdown = plain text/kode), beda sama font UI biasa di halaman lain */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-ui: 'Segoe UI', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-ui);
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  color: var(--text-primary);
+  padding: 40px 20px 80px;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ============ TOPBAR (nav balik ke dashboard) ============ */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+.back-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s ease;
+}
+.back-link:hover { color: var(--accent-cyan); }
+
+/* ============ HERO ============ */
+.hero {
+  margin-bottom: 40px;
+}
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent-cyan);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Cursor kedip — signature kecil biar berasa "hidup", tapi gak berlebihan */
+.hero-eyebrow .cursor {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: var(--accent-cyan);
+  animation: blink 1.1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.hero h1 {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+.hero h1 .arrow {
+  color: var(--accent-indigo);
+}
+.hero p {
+  color: var(--text-muted);
+  font-size: 14px;
+  max-width: 560px;
+  line-height: 1.6;
+}
+.hero .privacy-note {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--success);
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+/* ============ DROPZONE ============ */
+.dropzone {
+  border: 1.5px dashed var(--card-border);
+  border-radius: 16px;
+  background: var(--card-bg);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  margin-bottom: 28px;
+}
+.dropzone:hover {
+  border-color: var(--card-border-hover);
+}
+.dropzone.drag-over {
+  border-color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.06);
+  transform: scale(1.005);
+}
+.dropzone-icon {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent-cyan);
+  margin-bottom: 10px;
+}
+.dropzone h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.dropzone p {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.dropzone .formats {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.format-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+#fileInput { display: none; }
+
+/* ============ RESULT LIST ============ */
+.results { display: flex; flex-direction: column; gap: 14px; }
+
+.result-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  gap: 12px;
+}
+.result-head:hover { background: rgba(255, 255, 255, 0.02); }
+
+.result-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.file-ext {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bg-1);
+  background: var(--accent-cyan);
+  padding: 3px 6px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.file-name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-status {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.result-status.processing { color: var(--text-muted); }
+.result-status.done { color: var(--success); }
+.result-status.error { color: var(--danger); }
+
+.spinner {
+  width: 12px; height: 12px;
+  border: 2px solid var(--card-border);
+  border-top-color: var(--accent-cyan);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.result-body {
+  display: none;
+  border-top: 1px solid var(--card-border);
+}
+.result-body.open { display: block; }
+
+.result-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--card-border);
+}
+.btn-mini {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-mini:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: var(--card-border-hover);
+}
+.btn-mini.copied { color: var(--success); border-color: rgba(52, 211, 153, 0.4); }
+
+.result-output {
+  width: 100%;
+  min-height: 180px;
+  max-height: 420px;
+  resize: vertical;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+  border: none;
+  outline: none;
+  padding: 16px 18px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre;
+  overflow: auto;
+}
+
+.empty-hint {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
+  padding: 20px 0 0;
+}
+
+@media (max-width: 600px) {
+  .hero h1 { font-size: 26px; }
+  .dropzone { padding: 32px 16px; }
+}
