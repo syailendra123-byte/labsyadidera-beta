@@ -1,5 +1,5 @@
 {
-  "title": "Sy Markitdown",
-  "description": "Konversi berbagai format file jadi Markdown.",
+  "title": "Markitdown",
+  "description": "Konversi berbagai format file jadi Markdown. File yang didukung: PDF, DOCX, PPTX, XLSX, TXT, HTML, dan lainnya. Cukup unggah file Anda dan dapatkan hasil konversi dalam format Markdown.",
   "tag": "Tool"
 }
