@@ -124,7 +124,7 @@
 
     /* ===== WELCOME ===== */
     .welcome-section {
-      margin-bottom: 24px;
+      margin-bottom: 28px;
       animation: fadeIn 0.6s ease-out 0.1s both;
     }
     @keyframes fadeIn {
@@ -142,75 +142,58 @@
       color: #64748b; font-size: 14px;
     }
 
-    /* ===== PROJECTS ===== */
+    /* ===== PROJECTS GRID ===== */
     .projects-area {
       animation: fadeIn 0.6s ease-out 0.2s both;
     }
-
-    /* Desktop: grid kotak */
-    @media (min-width: 769px) {
-      .projects-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 18px;
-      }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
     }
-    /* HP: list */
     @media (max-width: 768px) {
       .projects-grid {
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 18px;
       }
     }
 
     /* ===== PROJECT CARD ===== */
     .proj-card {
       position: relative;
+      z-index: 1;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 16px;
-      padding: 20px;
       overflow: hidden;
       cursor: pointer;
       transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
-      min-height: 180px;
     }
 
-    /* Top accent line */
-    .proj-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 3px;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    /* iframe preview - hidden by default */
+    /* iframe preview - di atas tag */
     .proj-preview {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 0;
       border: none;
       opacity: 0;
-      transform: scale(1.05);
-      transition: all 0.4s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
-      z-index: 1;
-      border-radius: 16px;
+      flex-shrink: 0;
+      display: block;
+      background: #0f172a;
     }
 
-    /* Card content */
-    .card-content {
-      position: relative;
-      z-index: 2;
+    .card-body {
+      padding: 20px;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      flex: 1;
-      transition: all 0.35s ease;
+      position: relative;
+      z-index: 2;
+      transition: padding 0.35s ease;
     }
 
     .proj-card .tag {
@@ -237,113 +220,48 @@
       font-size: 16px; font-weight: 600;
       margin-bottom: 10px;
       color: #f1f5f9;
-      transition: all 0.3s ease;
+      transition: color 0.3s ease;
     }
 
-    /* Description - normal: center, 2 lines max */
-    .proj-card .desc-short {
-      font-size: 13px; color: #64748b;
-      text-align: center;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      line-height: 1.5;
-      margin: auto 0;
-      transition: all 0.35s ease;
-    }
-
-    /* Description - full: hidden by default */
-    .proj-card .desc-full {
-      font-size: 13px; color: #94a3b8;
-      text-align: left;
+    /* Deskripsi - tampil penuh, tidak di-clamp, tidak scroll */
+    .proj-card .desc {
+      font-size: 13px;
+      color: #94a3b8;
       line-height: 1.6;
-      opacity: 0;
-      max-height: 0;
-      overflow: hidden;
       transition: all 0.35s ease;
-    }
-
-    /* Arrow icon */
-    .proj-card .arrow {
-      position: absolute;
-      bottom: 16px; right: 16px;
-      width: 28px; height: 28px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 8px;
-      display: flex;
-      align-items: center; justify-content: center;
-      opacity: 0;
-      transform: translateX(-8px);
-      transition: all 0.25s ease;
-      z-index: 3;
-    }
-    .proj-card .arrow svg {
-      width: 14px; height: 14px;
-      color: #38bdf8;
     }
 
     /* ===== DESKTOP HOVER ===== */
     @media (min-width: 769px) {
       .proj-card:hover {
-        transform: scale(1.03) translateY(-4px);
-        border-color: rgba(56, 189, 248, 0.3);
-        box-shadow: 0 16px 50px rgba(0,0,0,0.35), 0 0 0 1px rgba(56, 189, 248, 0.08) inset;
-        z-index: 10;
+        transform: scale(1.06);
+        z-index: 100;
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(56, 189, 248, 0.08) inset;
       }
-      .proj-card:hover::before { opacity: 1; }
       .proj-card:hover .proj-preview {
-        opacity: 0.15;
-        transform: scale(1);
-      }
-      .proj-card:hover .card-content {
-        background: rgba(15, 23, 42, 0.85);
-        border-radius: 12px;
-        padding: 12px;
-        margin: -8px;
-      }
-      .proj-card:hover .desc-short {
-        opacity: 0; max-height: 0; margin: 0;
-      }
-      .proj-card:hover .desc-full {
-        opacity: 1; max-height: 200px; margin: auto 0;
-      }
-      .proj-card:hover .arrow {
-        opacity: 1; transform: translateX(0);
+        height: 140px;
+        opacity: 1;
       }
       .proj-card:hover h3 {
         color: #38bdf8;
+      }
+      .proj-card:hover .tag {
+        background: rgba(56,189,248,0.15);
+        border-color: rgba(56,189,248,0.3);
       }
     }
 
     /* ===== MOBILE EXPANDED ===== */
     @media (max-width: 768px) {
       .proj-card.expanded {
-        transform: scale(1.02);
         border-color: rgba(56, 189, 248, 0.4);
         box-shadow: 0 12px 40px rgba(0,0,0,0.35);
         z-index: 10;
-        min-height: 240px;
       }
-      .proj-card.expanded::before { opacity: 1; }
       .proj-card.expanded .proj-preview {
-        opacity: 0.12;
-        transform: scale(1);
-      }
-      .proj-card.expanded .card-content {
-        background: rgba(15, 23, 42, 0.9);
-        border-radius: 12px;
-        padding: 12px;
-        margin: -6px;
-      }
-      .proj-card.expanded .desc-short {
-        opacity: 0; max-height: 0; margin: 0;
-      }
-      .proj-card.expanded .desc-full {
-        opacity: 1; max-height: 200px; margin: auto 0;
-      }
-      .proj-card.expanded .arrow {
-        opacity: 1; transform: translateX(0);
+        height: 140px;
+        opacity: 1;
       }
       .proj-card.expanded h3 {
         color: #38bdf8;
@@ -412,21 +330,26 @@
       particlesContainer.appendChild(p);
     }
 
-    // Card click handler for mobile
-    function handleCardClick(card, slug, event) {
-      if (window.innerWidth <= 768) {
-        if (!card.classList.contains('expanded')) {
-          event.preventDefault();
-          event.stopPropagation();
-          // Collapse any other expanded card
-          document.querySelectorAll('.proj-card.expanded').forEach(c => {
-            if (c !== card) c.classList.remove('expanded');
-          });
-          card.classList.add('expanded');
-        } else {
-          // Already expanded, navigate
-          window.location.href = '/projects/' + slug;
-        }
+    // Card click handler
+    function handleCardClick(card, event) {
+      const slug = card.dataset.slug;
+
+      // Desktop: langsung navigasi
+      if (window.innerWidth > 768) {
+        window.location.href = '/projects/' + slug;
+        return;
+      }
+
+      // Mobile: expand dulu, klik kedua navigasi
+      if (!card.classList.contains('expanded')) {
+        event.stopPropagation();
+        // Collapse others
+        document.querySelectorAll('.proj-card.expanded').forEach(c => {
+          if (c !== card) c.classList.remove('expanded');
+        });
+        card.classList.add('expanded');
+      } else {
+        window.location.href = '/projects/' + slug;
       }
     }
 
@@ -490,19 +413,17 @@
                 ? projects.map((p) => `
                   <div class="proj-card"
                        data-slug="${p.slug}"
-                       onclick="handleCardClick(this, '${p.slug}', event)">
-                    <iframe class="proj-preview" src="/projects/${p.slug}" loading="lazy" tabindex="-1"></iframe>
-                    <div class="card-content">
+                       onclick="handleCardClick(this, event)">
+                    <iframe class="proj-preview"
+                            src="/projects/${p.slug}"
+                            loading="lazy"
+                            tabindex="-1"
+                            sandbox="allow-same-origin allow-scripts"
+                            scrolling="no"></iframe>
+                    <div class="card-body">
                       <span class="tag">${p.tag}</span>
                       <h3>${p.title}</h3>
-                      <p class="desc-short">${p.description}</p>
-                      <p class="desc-full">${p.description}</p>
-                      <div class="arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="5" y1="12" x2="19" y2="12"/>
-                          <polyline points="12 5 19 12 12 19"/>
-                        </svg>
-                      </div>
+                      <p class="desc">${p.description}</p>
                     </div>
                   </div>
                 `).join("")
