@@ -41,12 +41,6 @@ body {
 }
 
 /* ============ TOPBAR (nav balik ke dashboard) ============ */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 36px;
-}
 .back-link {
   color: var(--text-muted);
   text-decoration: none;

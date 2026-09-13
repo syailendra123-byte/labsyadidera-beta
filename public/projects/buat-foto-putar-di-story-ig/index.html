@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buat Foto kamu bisa diputar di Story Instagram</title>
+    <meta name="description" content="Untuk mengecoh sistem Instagram sehingga foto biasa dikenali sebagai jepretan dari kacamata pintar Ray-Ban Meta supaya ketika ingin diupload ke Story Instagram bisa diputar.">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    
+    <style>
+        :root {
+            --element-color: #FEC40B;
+            --text-color: #000000;
+        }
+
+        body {
+            /* Latar belakang dengan gradasi hitam di kiri bawah ke biru gelap */
+            background: radial-gradient(circle at bottom left, #000000 0%, #04123F 80%);
+            background-attachment: fixed;
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* === EFEK BINTANG DI BACKGROUND === */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle var(--duration) ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: var(--max-opacity); transform: scale(1); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        /* Area Unggah File & Drag and Drop */
+        .upload-area {
+            background-color: var(--element-color);
+            color: var(--text-color);
+            border-radius: 16px;
+            padding: 50px 20px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+            border: 3px dashed transparent;
+            z-index: 1;
+        }
+
+        .upload-area:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(254, 196, 11, 0.4);
+        }
+
+        .upload-area.drag-over {
+            border-color: #ffffff;
+            background-color: #ffcf33;
+            transform: scale(1.02);
+        }
+
+        .upload-area input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .upload-area h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        
+        .upload-area p {
+            margin: 10px 0 0 0;
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        /* Kotak Pesan Error (Warna diperbarui sesuai permintaan) */
+        .error-box {
+            background-color: #FF9999; /* Merah muda sesuai pesanan */
+            border: 2px solid #ef4444; 
+            color: #7f1d1d; /* Merah pekat agar mudah dibaca */
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: none; 
+            animation: fadeInDown 0.4s ease-out;
+            box-shadow: 0 5px 15px rgba(255, 153, 153, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Kartu Metadata & Skeleton */
+        .metadata-card, .skeleton-card {
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            display: none; 
+            position: relative;
+            z-index: 1;
+        }
+
+        .metadata-card {
+            background-color: var(--element-color);
+            color: var(--text-color);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .metadata-card.show {
+            display: block;
+            animation: slideUpFade 0.6s ease forwards;
+        }
+
+        /* SKELETON UI LOADING - WARNA KUNING */
+        .skeleton-card {
+            background: linear-gradient(135deg, #FEC40B 0%, #FFD54F 50%, #FEC40B 100%);
+            background-size: 200% 200%;
+            width: 100%;
+            box-sizing: border-box;
+            animation: skeleton-pulse 1.5s infinite ease-in-out, skeleton-shimmer 2.5s infinite linear;
+        }
+
+        .skeleton-card.show {
+            display: block;
+        }
+
+        .skeleton-title-box {
+            height: 24px;
+            width: 40%;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .skeleton-image-box {
+            height: 200px;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .skeleton-line {
+            height: 12px;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line.short { width: 60%; }
+        .skeleton-line.medium { width: 85%; margin-bottom: 25px; }
+
+        .metadata-card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            padding-bottom: 10px;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+        }
+
+        .table-container::-webkit-scrollbar { width: 8px; }
+        .table-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 4px; }
+        .table-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 4px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 10px 8px; border-bottom: 1px dashed rgba(0, 0, 0, 0.2); font-size: 0.9rem; vertical-align: top; }
+        td:first-child { font-weight: 700; width: 35%; }
+        td:last-child { text-align: right; word-break: break-word; }
+        table tr:last-child td { border-bottom: none; }
+
+        .section-title {
+            background-color: rgba(0,0,0,0.1);
+            font-weight: bold;
+            text-align: center !important;
+            padding: 8px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+
+        .preview-box {
+            margin-top: 20px;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .preview-box img {
+            max-width: 100%;
+            max-height: 300px;
+            display: block;
+            border-radius: 8px;
+        }
+
+        /* ==== KOTAK HIJAU: UBAH & UNDUH METADATA MAKE/MODEL ==== */
+        .metadata-card-green {
+            background-color: #4ADE80;
+            color: #00311a;
+        }
+
+        .metadata-card-green h3 {
+            border-bottom-color: rgba(0, 49, 26, 0.15);
+        }
+
+        .metadata-card-green .table-container {
+            background-color: #9bffc0; /* Nuansa lebih cerah buat area tabel */
+        }
+
+        .metadata-card-green .table-container::-webkit-scrollbar-track { background: rgba(0, 49, 26, 0.08); }
+        .metadata-card-green .table-container::-webkit-scrollbar-thumb { background: rgba(0, 49, 26, 0.25); }
+
+        .metadata-card-green td { border-bottom-color: rgba(0, 49, 26, 0.15); }
+
+        .metadata-card-green .section-title {
+            background-color: #00af57; /* Nuansa lebih gelap buat judul section */
+            color: #ffffff;
+        }
+
+        /* Input edit Make/Model - latar hijau gelap sesuai permintaan */
+        .edit-input {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #00af57;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 0.9rem;
+            text-align: right;
+            font-family: inherit;
+        }
+
+        .edit-input::placeholder { color: rgba(255, 255, 255, 0.85); }
+        .edit-input:focus { outline: 2px solid #00311a; }
+
+        .edit-note {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(0, 49, 26, 0.1);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 20px;
+            padding: 14px;
+            background-color: #00af57;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .download-btn:hover { background-color: #059247; transform: translateY(-2px); }
+        .download-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* === JUDUL & SUBJUDUL DARI info.md === */
+        .header-subtitle {
+            text-align: center;
+            margin: 0 0 30px 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.6;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        /* Kemiringan italic sesuai penulisan *Ray-Ban Meta* di info.md */
+        .header-subtitle em { font-style: italic; }
+
+        .title-arrow {
+            display: flex;
+            justify-content: center;
+            margin: 5px 0 15px 0;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .title-arrow svg {
+            animation: arrowBounce 1.5s infinite ease-in-out;
+            filter: drop-shadow(0 0 8px rgba(254, 196, 11, 0.8));
+        }
+
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateY(0); opacity: 1; }
+            50% { transform: translateY(8px); opacity: 0.7; }
+        }
+
+        /* === KONTEN DOKUMENTASI info.md (H2, H3, bold, italic, code, list, hr) === */
+        .info-content {
+            margin-top: 45px;
+            text-align: left;
+            color: #ffffff;
+            line-height: 1.7;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .info-content h2 {
+            font-size: 1.5rem;
+            margin: 35px 0 15px 0;
+            color: var(--element-color);
+            text-shadow: 0 0 12px rgba(254, 196, 11, 0.5);
+            border-bottom: 2px solid rgba(254, 196, 11, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .info-content h3 {
+            font-size: 1.15rem;
+            margin: 25px 0 10px 0;
+            color: #FFD54F;
+        }
+
+        .info-content p { margin: 12px 0; }
+
+        .info-content ul,
+        .info-content ol { margin: 12px 0; padding-left: 25px; }
+
+        .info-content li { margin-bottom: 8px; }
+        .info-content ul ul { margin-top: 8px; }
+
+        /* Ketebalan bold sesuai penulisan **...** di info.md */
+        .info-content strong { font-weight: 700; }
+
+        /* Kemiringan italic sesuai penulisan *...* di info.md */
+        .info-content em { font-style: italic; }
+
+        .info-content code {
+            background-color: rgba(254, 196, 11, 0.15);
+            color: #FFD54F;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .info-content hr {
+            border: none;
+            border-top: 2px dashed rgba(254, 196, 11, 0.4);
+            margin: 30px 0;
+        }
+
+        /* Animasi */
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes skeleton-pulse { 0% { opacity: 1; } 50% { opacity: 0.85; } 100% { opacity: 1; } }
+        @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+<base target="_blank">
+</head>
+<body>
+
+    <!-- EFEK BINTANG DI BELAKANG ELEMEN -->
+    <div class="stars-container" id="starsContainer"></div>
+
+    <div class="container">
+        <h1 class="header-title">Buat Foto kamu bisa diputar di Story IG</h1>
+
+        <!-- Tanda panah yang menunjuk ke teks penjelasan di bawahnya -->
+        <div class="title-arrow" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FEC40B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="4" x2="12" y2="20"></line>
+                <polyline points="6 14 12 20 18 14"></polyline>
+            </svg>
+        </div>
+
+        <!-- Kutipan dari info.md - gaya dibuat sama seperti judul -->
+        <p class="header-subtitle">Untuk <em>mengecoh</em> sistem Instagram sehingga foto biasa dikenali sebagai jepretan dari kacamata pintar <em>Ray-Ban Meta</em>.</p>
+
+        <!-- Area Unggah -->
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+            </div>
+            <h3>Ketuk atau Tarik Foto ke Sini</h3>
+            <p>Unggah Foto untuk melihat rincian tersembunyi</p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <!-- Kotak Error (Warna baru #FF9999) -->
+        <div id="errorBox" class="error-box">
+            Terjadi kesalahan, pilihlah file Foto
+        </div>
+
+        <!-- Skeleton Loading (Pengganti teks loading - WARNA KUNING) -->
+        <div id="skeletonLoading" class="skeleton-card">
+            <h3 style="color: rgba(0,0,0,0.6); margin-top: 0;">Rincian File Lengkap</h3>
+            <div class="skeleton-image-box"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line medium"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
+        </div>
+
+        <!-- Kartu Hasil Metadata -->
+        <div class="metadata-card" id="metadataCard">
+            <h3>Rincian File Lengkap</h3>
+            <div class="preview-box" id="previewBox"></div>
+            <div class="table-container" style="margin-top: 20px;">
+                <table id="metadataTable"></table>
+            </div>
+        </div>
+
+        <!-- Kartu Ubah & Unduh Make/Model (tema hijau) -->
+        <div class="metadata-card metadata-card-green" id="editCard">
+            <h3>Ubah &amp; Unduh Make/Model</h3>
+            <div class="table-container">
+                <table id="editTable"></table>
+            </div>
+            <div class="edit-note" id="editNote" style="display:none;">
+                Fitur ubah &amp; unduh saat ini mendukung foto JPEG, PNG, WEBP, dan TIFF.
+            </div>
+            <button class="download-btn" id="downloadBtn">Unduh File dengan Metadata Baru</button>
+        </div>
+
+        <!-- ===== KONTEN DARI info.md (lanjutan setelah bagian aplikasi) ===== -->
+        <div class="info-content">
+            <h2>1. Fungsi Web Ini</h2>
+            <p>Website ini pada dasarnya adalah sebuah alat <strong>Manipulator EXIF (Exchangeable Image File Format)</strong> yang bekerja secara spesifik dan efisien. Fokus utama dari web ini bukanlah mengedit visual gambar, melainkan mengubah identitas "di balik layar" dari gambar tersebut.</p>
+            <p>Secara detail, fungsi utama web ini adalah:</p>
+            <ul>
+                <li><strong>Spoofing Perangkat (Device Spoofing):</strong> Mengganti informasi pabrikan (<code>Make</code>) dan model perangkat (<code>Model</code>) pada metadata foto asli menjadi data spesifik milik kacamata <em>Ray-Ban Meta</em>.</li>
+                <li><strong>Membuka Fitur Tersembunyi di Instagram:</strong> Aplikasi Instagram memiliki fitur eksklusif untuk foto yang diunggah dari kacamata pintar Ray-Ban, yaitu kemampuan untuk diputar (rotasi/efek khusus) saat dijadikan Instagram Story. Dengan menggunakan web ini, foto dari kamera apa pun (DSLR, Android, mirrorless) dapat diputar di Story seolah-olah diambil menggunakan Ray-Ban.</li>
+                <li><strong>Optimalisasi Khusus iOS:</strong> Saat ini, bypass algoritma pembacaan EXIF Instagram untuk fitur rotasi Ray-Ban ini terbukti berhasil dieksekusi secara sempurna melalui aplikasi Instagram di perangkat <strong>iPhone (iOS)</strong>. Ketika menggunakan perangkat Android, ini tidak berhasil.</li>
+            </ul>
+
+            <h2>2. Cara Kerja</h2>
+            <p>Proses kerja dari website ini memadukan manipulasi data sisi klien (client-side) atau server-side dengan pemahaman tentang bagaimana platform sosial media membaca file media. Berikut adalah rincian teknis cara kerjanya:</p>
+
+            <h3>A. Tahap Pembacaan (Parsing)</h3>
+            <ol>
+                <li><strong>Pengunggahan Gambar:</strong> Pengguna mengunggah gambar (biasanya berformat JPG/JPEG yang mendukung EXIF data secara native) ke dalam website.</li>
+                <li><strong>Ekstraksi EXIF:</strong> Skrip pada web (menggunakan library pemrosesan gambar/EXIF) akan membongkar susunan data biner dari gambar tersebut untuk menemukan blok data EXIF. Blok ini berisi informasi kapan foto diambil, ISO, lensa, hingga merk kamera.</li>
+            </ol>
+
+            <h3>B. Tahap Modifikasi (Spoofing)</h3>
+            <ol start="3">
+                <li><strong>Injeksi Tag Spesifik:</strong> Web secara otomatis akan mencari tag <code>Make</code> (ID: 0x010F) dan <code>Model</code> (ID: 0x0110).
+                    <ul>
+                        <li>Nilai <code>Make</code> yang lama akan dihapus dan ditimpa dengan <em>string</em> baru, yaitu: <strong>"Meta AI"</strong></li>
+                        <li>Nilai <code>Model</code> akan ditimpa dengan <em>string</em> yang sangat spesifik, yaitu: <strong>"Ray-Ban Meta Smart Glasses"</strong></li>
+                    </ul>
+                </li>
+                <li><strong>Penyusunan Ulang Biner (Re-encoding):</strong> Setelah metadata dimodifikasi, web akan menyatukan kembali blok EXIF yang baru dengan blok piksel gambar asli. Proses ini dilakukan tanpa mengurangi kualitas gambar (lossless) karena piksel visual tidak disentuh sama sekali.</li>
+            </ol>
+
+            <h3>C. Tahap Eksekusi di Instagram</h3>
+            <ol start="5">
+                <li><strong>Pengunduhan &amp; Publikasi:</strong> Pengguna mengunduh gambar hasil modifikasi ke iPhone mereka.</li>
+                <li><strong>Validasi Sistem iOS Instagram:</strong> Ketika gambar ini dipilih untuk diunggah ke Instagram Story melalui iPhone, algoritma Instagram iOS akan memindai EXIF. Karena ia mendeteksi tag "Make: Meta" dan "Model: Ray-Ban", aplikasi langsung memberikan "izin" (trigger) untuk memunculkan antarmuka rotasi/efek 360 yang secara default dikunci untuk perangkat biasa.</li>
+            </ol>
+
+            <h2>3. Kredit &amp; Penafian</h2>
+            <p>Pembuatan alat bantu ini merupakan hasil eksplorasi teknis terkait metadata gambar dan algoritma platform sosial media.</p>
+            <ul>
+                <li><strong>Pengembang / Kreator:</strong> Dikembangkan oleh <strong>Syailendra123-byte</strong>.</li>
+                <li><strong>Teknologi &amp; Pustaka (Libraries):</strong> Proyek ini dimungkinkan berkat teknologi web modern dan library pemrosesan EXIF/Image <em>Exif.js</em>.</li>
+                <li><strong>Penafian (Disclaimer):</strong>
+                    <ul>
+                        <li>Alat ini murni dibuat untuk <strong>bereksperimen</strong>, agar bisa memutar foto di <strong>Story Instagram</strong>.</li>
+                        <li>Web ini tidak berafiliasi, tidak didukung, dan tidak disponsori oleh <strong>Meta Platforms, Inc.</strong>, <strong>Instagram</strong>, maupun <strong>Ray-Ban (EssilorLuxottica)</strong>.</li>
+                        <li>Segala perubahan kebijakan dari pihak Instagram yang menambal (patch) celah ini di pembaruan aplikasi versi mendatang (khususnya di iOS) berada di luar kendali pengembang web.</li>
+                        <li>Saat mencoba di Android, itu menggunakan Android Versi 15, tidak menggunakan versi terbaru.</li>
+                    </ul>
+                </li>
+            </ul>
+            <hr>
+            <p><em>Dokumen ini dibuat secara otomatis sebagai penjelasan fungsional dan teknis dari proyek web modifikasi metadata Ray-Ban Meta.</em></p>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const metadataCard = document.getElementById('metadataCard');
+        const metadataTable = document.getElementById('metadataTable');
+        const previewBox = document.getElementById('previewBox');
+        const skeletonLoading = document.getElementById('skeletonLoading');
+        const errorBox = document.getElementById('errorBox');
+        const editCard = document.getElementById('editCard');
+        const editTable = document.getElementById('editTable');
+        const editNote = document.getElementById('editNote');
+        const downloadBtn = document.getElementById('downloadBtn');
+        let currentFile = null; // referensi file yang lagi aktif, dipakai tombol unduh
+        let currentFileKind = 'unsupported'; // 'image-jpeg' | 'image-png' | 'image-webp' | 'image-tiff' | 'unsupported'
+
+        // ==== GENERATOR BINTANG BACKGROUND ====
+        function createStars() {
+            const container = document.getElementById('starsContainer');
+            const starCount = 80;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2.5 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                star.style.setProperty('--delay', (Math.random() * 5) + 's');
+                star.style.setProperty('--max-opacity', Math.random() * 0.7 + 0.3);
+                container.appendChild(star);
+            }
+        }
+        createStars();
+
+        // ==== FITUR DRAG AND DROP ====
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault(); e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('drag-over'), false);
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            if(files.length > 0) {
+                fileInput.files = files; 
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', function(event) {
+            if (event.target.files.length > 0) {
+                handleFile(event.target.files[0]);
+            }
+        });
+
+        // ==== LOGIKA FORMATTING ====
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function addTableRow(label, value, isSection = false) {
+            const tr = document.createElement('tr');
+            if (isSection) {
+                const td = document.createElement('td');
+                td.colSpan = 2;
+                td.className = 'section-title';
+                td.textContent = label;
+                tr.appendChild(td);
+            } else {
+                const tdLabel = document.createElement('td');
+                const tdValue = document.createElement('td');
+                tdLabel.textContent = label;
+                
+                if (Array.isArray(value)) {
+                    tdValue.textContent = value.join(', ');
+                } else if (typeof value === 'object' && value !== null) {
+                    tdValue.textContent = JSON.stringify(value);
+                } else {
+                    tdValue.textContent = value || 'Tidak diketahui';
+                }
+                
+                tr.appendChild(tdLabel);
+                tr.appendChild(tdValue);
+            }
+            metadataTable.appendChild(tr);
+        }
+
+        // ==================================================================================
+        // ==== FITUR "UBAH & UNDUH": TULIS ULANG Make/Model DI EXIF FOTO (JPEG/PNG/WEBP/TIFF)
+        // ==================================================================================
+        // Strategi "shadow IFD0": daripada nyisipin/nggeser byte di tengah blob TIFF/EXIF
+        // (yang bisa gampang ngerusak offset tag lain kayak GPS/thumbnail/MakerNote),
+        // kita bikin IFD0 versi BARU (isinya salinan entry lama + Make/Model baru),
+        // ditempel di UJUNG blob TIFF (append murni, gak nimpa apa-apa), terus cuma
+        // ubah SATU pointer di header TIFF (offset ke IFD0) biar nunjuk ke yang baru.
+        // Data lama (termasuk GPS/thumbnail/tag lain) tetap utuh di posisi asalnya.
+        // Fungsi ini DIPAKAI BARENG oleh JPEG, PNG, WEBP, dan TIFF - cuma cara
+        // "membungkusnya" ke masing-masing format file yang beda.
+
+        // Bangun blob TIFF baru: kalau existingTiffBytes null -> bikin dari nol (cuma
+        // Make/Model). Kalau ada isinya -> shadow-patch (semua tag lain diawetkan).
+        function buildPatchedTiffBlob(existingTiffBytes, makeText, modelText) {
+            let little, entries, nextIfdOffset, baseBytes;
+
+            if (existingTiffBytes) {
+                const tiffBytes = existingTiffBytes;
+                const tdv = new DataView(tiffBytes.buffer, tiffBytes.byteOffset, tiffBytes.byteLength);
+                little = (tiffBytes[0] === 0x49 && tiffBytes[1] === 0x49); // 'II' = little endian
+                const ifd0Offset = tdv.getUint32(4, little);
+                const entryCount = tdv.getUint16(ifd0Offset, little);
+
+                entries = [];
+                for (let i = 0; i < entryCount; i++) {
+                    const entryOffset = ifd0Offset + 2 + i * 12;
+                    const tag = tdv.getUint16(entryOffset, little);
+                    const type = tdv.getUint16(entryOffset + 2, little);
+                    const count = tdv.getUint32(entryOffset + 4, little);
+                    const valueRaw = new Uint8Array(tiffBytes.slice(entryOffset + 8, entryOffset + 12));
+                    entries.push({ tag, type, count, valueRaw });
+                }
+                nextIfdOffset = tdv.getUint32(ifd0Offset + 2 + entryCount * 12, little);
+                baseBytes = tiffBytes;
+            } else {
+                // Belum ada TIFF/EXIF sama sekali -> mulai dari header TIFF minimal (8 byte)
+                little = true; // little-endian ('II', byte order Intel, paling umum)
+                entries = [];
+                nextIfdOffset = 0;
+                baseBytes = new Uint8Array(8);
+                baseBytes[0] = 0x49; baseBytes[1] = 0x49; // 'II'
+                const bdv = new DataView(baseBytes.buffer);
+                bdv.setUint16(2, 42, little);
+                bdv.setUint32(4, 8, little); // IFD0 nempel persis setelah header 8 byte
+            }
+
+            // Buang entry Make (0x010F) / Model (0x0110) LAMA - bakal diganti versi baru
+            const filteredEntries = entries.filter(e => e.tag !== 0x010F && e.tag !== 0x0110);
+
+            // String Make/Model baru ditempel di UJUNG blob (append, gak nimpa apapun)
+            let appendCursor = baseBytes.length;
+            const appendParts = [];
+
+            function makeNewStringEntry(tag, text) {
+                const strBytes = new TextEncoder().encode(text + '\0'); // ASCII + null terminator wajib
+                const valueRaw = new Uint8Array(4);
+                const vdv = new DataView(valueRaw.buffer);
+                if (strBytes.length <= 4) {
+                    valueRaw.set(strBytes); // muat inline (jarang kejadian buat Make/Model)
+                } else {
+                    vdv.setUint32(0, appendCursor, little);
+                    appendParts.push(strBytes);
+                    appendCursor += strBytes.length;
+                }
+                return { tag, type: 2, count: strBytes.length, valueRaw }; // type 2 = ASCII
+            }
+
+            if (makeText) filteredEntries.push(makeNewStringEntry(0x010F, makeText));
+            if (modelText) filteredEntries.push(makeNewStringEntry(0x0110, modelText));
+
+            // Spek TIFF WAJIB: entry di dalam IFD harus terurut ascending berdasar tag
+            filteredEntries.sort((a, b) => a.tag - b.tag);
+
+            // Rakit IFD0 BARU (entry table + next-ifd-offset) di ujung blob (appendCursor)
+            const newIfd0Offset = appendCursor;
+            const newIfd0Size = 2 + filteredEntries.length * 12 + 4;
+            const newIfd0 = new Uint8Array(newIfd0Size);
+            const nidv = new DataView(newIfd0.buffer);
+            nidv.setUint16(0, filteredEntries.length, little);
+            filteredEntries.forEach((e, i) => {
+                const eOff = 2 + i * 12;
+                nidv.setUint16(eOff, e.tag, little);
+                nidv.setUint16(eOff + 2, e.type, little);
+                nidv.setUint32(eOff + 4, e.count, little);
+                newIfd0.set(e.valueRaw, eOff + 8);
+            });
+            nidv.setUint32(2 + filteredEntries.length * 12, nextIfdOffset, little); // target IFD1/thumbnail TETAP SAMA, belum pindah
+
+            // Gabungkan: TIFF lama/header awal (utuh, gak diapa-apain) + string baru + IFD0 baru
+            const combinedParts = [baseBytes, ...appendParts, newIfd0];
+            const totalLen = combinedParts.reduce((s, p) => s + p.length, 0);
+            const newTiffBytes = new Uint8Array(totalLen);
+            let cur = 0;
+            for (const part of combinedParts) { newTiffBytes.set(part, cur); cur += part.length; }
+
+            // SATU-SATUNYA pointer yang berubah: offset IFD0 di header TIFF -> arahkan ke yang baru
+            const finalDv = new DataView(newTiffBytes.buffer);
+            finalDv.setUint32(4, newIfd0Offset, little);
+
+            return newTiffBytes;
+        }
+
+        // Pembaca ringan (Make/Model doang) buat format yang gak dicover EXIF.js (PNG/WEBP/TIFF)
+        function readTiffMakeModel(tiffBytes) {
+            const result = {};
+            try {
+                const tdv = new DataView(tiffBytes.buffer, tiffBytes.byteOffset, tiffBytes.byteLength);
+                const little = (tiffBytes[0] === 0x49 && tiffBytes[1] === 0x49);
+                const ifd0Offset = tdv.getUint32(4, little);
+                const entryCount = tdv.getUint16(ifd0Offset, little);
+                for (let i = 0; i < entryCount; i++) {
+                    const entryOffset = ifd0Offset + 2 + i * 12;
+                    const tag = tdv.getUint16(entryOffset, little);
+                    if (tag !== 0x010F && tag !== 0x0110) continue;
+                    const count = tdv.getUint32(entryOffset + 4, little);
+                    let strStart;
+                    if (count <= 4) {
+                        strStart = entryOffset + 8;
+                    } else {
+                        strStart = tdv.getUint32(entryOffset + 8, little);
+                    }
+                    const strBytes = tiffBytes.slice(strStart, strStart + count);
+                    const text = new TextDecoder('utf-8').decode(strBytes).replace(/\0+$/, '');
+                    if (tag === 0x010F) result.make = text;
+                    if (tag === 0x0110) result.model = text;
+                }
+            } catch (e) {
+                // Kalau gagal parsing, biarin kosong aja - bukan error fatal
+            }
+            return result;
+        }
+
+        // CRC32 standar (dipakai PNG buat validasi tiap chunk)
+        const CRC32_TABLE = (() => {
+            const table = new Uint32Array(256);
+            for (let n = 0; n < 256; n++) {
+                let c = n;
+                for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+                table[n] = c >>> 0;
+            }
+            return table;
+        })();
+        function crc32(bytes) {
+            let c = 0xFFFFFFFF;
+            for (let i = 0; i < bytes.length; i++) c = CRC32_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+            return (c ^ 0xFFFFFFFF) >>> 0;
+        }
+
+        // ==== JPEG: cari segmen APP1 "Exif\0\0", patch, bungkus ulang ====
+        async function patchJpegMakeModel(file, makeText, modelText) {
+            if (!makeText && !modelText) {
+                throw new Error('Isi Make atau Model dulu (minimal salah satu) sebelum diunduh.');
+            }
+            const buffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            const dv = new DataView(buffer);
+            if (bytes[0] !== 0xFF || bytes[1] !== 0xD8) {
+                throw new Error('File ini bukan JPEG yang valid (byte awal bukan FFD8).');
+            }
+
+            let offset = 2;
+            let exifSegment = null; // { markerStart, tiffStart, segLength }
+            while (offset + 4 <= bytes.length) {
+                if (bytes[offset] !== 0xFF) break;
+                const marker = bytes[offset + 1];
+                if (marker === 0xD8 || marker === 0xD9) { offset += 2; continue; }
+                if (marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)) { offset += 2; continue; }
+                if (marker === 0xDA) break;
+                const segLength = dv.getUint16(offset + 2, false);
+                if (marker === 0xE1 && offset + 10 <= bytes.length &&
+                    bytes[offset+4]===0x45 && bytes[offset+5]===0x78 && bytes[offset+6]===0x69 &&
+                    bytes[offset+7]===0x66 && bytes[offset+8]===0x00 && bytes[offset+9]===0x00) {
+                    exifSegment = { markerStart: offset, tiffStart: offset + 10, segLength };
+                    break;
+                }
+                offset += 2 + segLength;
+            }
+
+            const existingTiff = exifSegment
+                ? bytes.slice(exifSegment.tiffStart, exifSegment.markerStart + 2 + exifSegment.segLength)
+                : null;
+            const newTiffBytes = buildPatchedTiffBlob(existingTiff, makeText, modelText);
+
+            const newExifPayload = new Uint8Array(6 + newTiffBytes.length);
+            newExifPayload.set([0x45, 0x78, 0x69, 0x66, 0x00, 0x00], 0);
+            newExifPayload.set(newTiffBytes, 6);
+
+            const app1SegLength = 2 + newExifPayload.length;
+            const app1Header = new Uint8Array(4);
+            const adv = new DataView(app1Header.buffer);
+            app1Header[0] = 0xFF; app1Header[1] = 0xE1;
+            adv.setUint16(2, app1SegLength, false);
+
+            let before, after;
+            if (exifSegment) {
+                before = bytes.slice(0, exifSegment.markerStart);
+                after = bytes.slice(exifSegment.markerStart + 2 + exifSegment.segLength);
+            } else {
+                before = bytes.slice(0, 2);
+                after = bytes.slice(2);
+            }
+
+            const finalBytes = new Uint8Array(before.length + app1Header.length + newExifPayload.length + after.length);
+            let pos = 0;
+            finalBytes.set(before, pos); pos += before.length;
+            finalBytes.set(app1Header, pos); pos += app1Header.length;
+            finalBytes.set(newExifPayload, pos); pos += newExifPayload.length;
+            finalBytes.set(after, pos);
+
+            return new Blob([finalBytes], { type: 'image/jpeg' });
+        }
+
+        // ==== PNG: cari chunk 'eXIf', patch, bungkus ulang (dengan CRC32 valid) ====
+        async function patchPngMakeModel(file, makeText, modelText) {
+            if (!makeText && !modelText) {
+                throw new Error('Isi Make atau Model dulu (minimal salah satu) sebelum diunduh.');
+            }
+            const buffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            const dv = new DataView(buffer);
+            const PNG_SIG = [0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A];
+            for (let i = 0; i < 8; i++) {
+                if (bytes[i] !== PNG_SIG[i]) throw new Error('File ini bukan PNG yang valid.');
+            }
+
+            // Telusuri semua chunk: [length(4)][type(4)][data(length)][crc(4)]
+            let offset = 8;
+            let ihdrEnd = -1;
+            let exifChunk = null; // { start, dataStart, length }
+            const chunks = [];
+            while (offset + 8 <= bytes.length) {
+                const length = dv.getUint32(offset, false);
+                const type = String.fromCharCode(bytes[offset+4], bytes[offset+5], bytes[offset+6], bytes[offset+7]);
+                const chunkEnd = offset + 12 + length;
+                chunks.push({ start: offset, type, length, end: chunkEnd });
+                if (type === 'IHDR') ihdrEnd = chunkEnd;
+                if (type === 'eXIf') exifChunk = { start: offset, dataStart: offset + 8, length };
+                if (type === 'IEND') break;
+                offset = chunkEnd;
+            }
+            if (ihdrEnd === -1) throw new Error('Chunk IHDR tidak ditemukan - file PNG gak valid.');
+
+            const existingTiff = exifChunk ? bytes.slice(exifChunk.dataStart, exifChunk.dataStart + exifChunk.length) : null;
+            const newTiffBytes = buildPatchedTiffBlob(existingTiff, makeText, modelText);
+
+            // Bangun chunk eXIf baru lengkap dengan CRC32
+            const typeBytes = new Uint8Array([0x65, 0x58, 0x49, 0x66]); // 'eXIf'
+            const crcInput = new Uint8Array(4 + newTiffBytes.length);
+            crcInput.set(typeBytes, 0);
+            crcInput.set(newTiffBytes, 4);
+            const crcVal = crc32(crcInput);
+
+            const newChunk = new Uint8Array(12 + newTiffBytes.length);
+            const ndv = new DataView(newChunk.buffer);
+            ndv.setUint32(0, newTiffBytes.length, false);
+            newChunk.set(typeBytes, 4);
+            newChunk.set(newTiffBytes, 8);
+            ndv.setUint32(8 + newTiffBytes.length, crcVal, false);
+
+            // Buang chunk eXIf lama (kalau ada), sisipkan yang baru tepat setelah IHDR
+            let before, after;
+            if (exifChunk) {
+                before = bytes.slice(0, exifChunk.start);
+                after = bytes.slice(exifChunk.start + 12 + exifChunk.length);
+            } else {
+                before = bytes.slice(0, ihdrEnd);
+                after = bytes.slice(ihdrEnd);
+            }
+
+            const finalBytes = new Uint8Array(before.length + newChunk.length + after.length);
+            finalBytes.set(before, 0);
+            finalBytes.set(newChunk, before.length);
+            finalBytes.set(after, before.length + newChunk.length);
+
+            return new Blob([finalBytes], { type: 'image/png' });
+        }
+
+        // ==== WEBP: cari chunk RIFF 'EXIF', patch, bungkus ulang (update ukuran RIFF) ====
+        async function patchWebpMakeModel(file, makeText, modelText) {
+            if (!makeText && !modelText) {
+                throw new Error('Isi Make atau Model dulu (minimal salah satu) sebelum diunduh.');
+            }
+            const buffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            const dv = new DataView(buffer);
+            const riffTag = String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]);
+            const webpTag = String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]);
+            if (riffTag !== 'RIFF' || webpTag !== 'WEBP') {
+                throw new Error('File ini bukan WEBP yang valid.');
+            }
+
+            let offset = 12;
+            let exifChunk = null; // { start, dataStart, size, paddedSize }
+            while (offset + 8 <= bytes.length) {
+                const fourcc = String.fromCharCode(bytes[offset], bytes[offset+1], bytes[offset+2], bytes[offset+3]);
+                const size = dv.getUint32(offset + 4, true); // RIFF little-endian
+                const paddedSize = size + (size % 2); // chunk RIFF wajib genap, ada padding 1 byte kalau ganjil
+                if (fourcc === 'EXIF') {
+                    exifChunk = { start: offset, dataStart: offset + 8, size, paddedSize };
+                }
+                offset += 8 + paddedSize;
+            }
+
+            const existingTiff = exifChunk ? bytes.slice(exifChunk.dataStart, exifChunk.dataStart + exifChunk.size) : null;
+            const newTiffBytes = buildPatchedTiffBlob(existingTiff, makeText, modelText);
+
+            const paddedLen = newTiffBytes.length + (newTiffBytes.length % 2);
+            const newChunk = new Uint8Array(8 + paddedLen);
+            const ndv = new DataView(newChunk.buffer);
+            newChunk.set([0x45,0x58,0x49,0x46], 0); // 'EXIF'
+            ndv.setUint32(4, newTiffBytes.length, true);
+            newChunk.set(newTiffBytes, 8);
+
+            let before, after;
+            if (exifChunk) {
+                before = bytes.slice(0, exifChunk.start);
+                after = bytes.slice(exifChunk.start + 8 + exifChunk.paddedSize);
+            } else {
+                // Belum ada chunk EXIF -> tempel di ujung file (posisi paling aman/compliant)
+                before = bytes.slice(0, bytes.length);
+                after = new Uint8Array(0);
+            }
+
+            const finalBytes = new Uint8Array(before.length + newChunk.length + after.length);
+            finalBytes.set(before, 0);
+            finalBytes.set(newChunk, before.length);
+            finalBytes.set(after, before.length + newChunk.length);
+
+            // Update ukuran total RIFF (4 byte di offset 4, isinya filesize - 8)
+            const finalDv = new DataView(finalBytes.buffer);
+            finalDv.setUint32(4, finalBytes.length - 8, true);
+
+            return new Blob([finalBytes], { type: 'image/webp' });
+        }
+
+        // ==== TIFF: file-nya SENDIRI persis blob TIFF -> patch langsung, gak perlu dibungkus ====
+        async function patchTiffMakeModel(file, makeText, modelText) {
+            if (!makeText && !modelText) {
+                throw new Error('Isi Make atau Model dulu (minimal salah satu) sebelum diunduh.');
+            }
+            const buffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            if (!((bytes[0] === 0x49 && bytes[1] === 0x49) || (bytes[0] === 0x4D && bytes[1] === 0x4D))) {
+                throw new Error('File ini bukan TIFF yang valid.');
+            }
+            const newTiffBytes = buildPatchedTiffBlob(bytes, makeText, modelText);
+            return new Blob([newTiffBytes], { type: 'image/tiff' });
+        }
+
+        // ==== BANGUN KOTAK HIJAU: KLONING TABEL HASIL, GANTI BARIS MAKE/MODEL JADI INPUT ====
+        function addEditableRow(table, label, inputId, placeholder) {
+            const tr = document.createElement('tr');
+            const tdLabel = document.createElement('td');
+            tdLabel.textContent = label;
+            const tdValue = document.createElement('td');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'edit-input';
+            input.id = inputId;
+            input.placeholder = placeholder;
+            tdValue.appendChild(input);
+            tr.appendChild(tdLabel);
+            tr.appendChild(tdValue);
+            table.appendChild(tr);
+        }
+
+        // fileKind: 'image-jpeg' | 'image-png' | 'image-webp' | 'image-tiff' | 'unsupported'
+        function buildEditableCard(fileKind, originalFileName) {
+            editTable.innerHTML = '';
+            let foundMake = false, foundModel = false;
+
+            // Baris pertama: Nama File - editable, style sama kayak Make/Model (hijau gelap).
+            // BEDA dari Make/Model: kalau dibiarin kosong, BUKAN dipakai literal jadi nama file,
+            // tapi jatuh ke default "rotate_<nama asli>" (lihat getDownloadFilename)
+            addEditableRow(editTable, 'Nama File', 'editFilenameInput', 'rotate_' + originalFileName);
+
+            // Kloning tiap baris dari tabel utama apa adanya, KECUALI baris Make/Model
+            // yang nilai selnya diganti jadi <input> KOSONG (placeholder doang) - value lama
+            // TIDAK di-echo ke sini, biar gak ketuker sama bug "gak berubah kalau dibiarin"
+            Array.from(metadataTable.querySelectorAll('tr')).forEach(tr => {
+                const clone = tr.cloneNode(true);
+                const cells = clone.querySelectorAll('td');
+                const label = cells[0] ? cells[0].textContent : '';
+                const isMake = label === 'Make';
+                const isModel = label === 'Model';
+
+                if (isMake || isModel) {
+                    if (isMake) foundMake = true; else foundModel = true;
+
+                    cells[1].innerHTML = '';
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'edit-input';
+                    input.id = isMake ? 'editMakeInput' : 'editModelInput';
+                    input.placeholder = isMake ? 'Meta AI' : 'Ray-Ban Meta Smart Glasses';
+                    // SENGAJA gak diisi value apapun - selalu mulai kosong (cuma placeholder)
+                    cells[1].appendChild(input);
+                }
+                editTable.appendChild(clone);
+            });
+
+            // Kalau field Make/Model belum ada sama sekali di metadata asli, tetep
+            // tambahin barisnya biar user bisa nambahin dari nol (bukan cuma ubah)
+            if (!foundMake) addEditableRow(editTable, 'Make', 'editMakeInput', 'Meta AI');
+            if (!foundModel) addEditableRow(editTable, 'Model', 'editModelInput', 'Ray-Ban Meta Smart Glasses');
+
+            // Fitur tulis-ulang metadata baru sekarang didukung buat JPEG, PNG, WEBP, TIFF.
+            // Format lain (GIF/BMP/HEIC/dll) belum didukung.
+            const isSupported = ['image-jpeg', 'image-png', 'image-webp', 'image-tiff'].includes(fileKind);
+            downloadBtn.style.display = isSupported ? 'block' : 'none';
+            editNote.style.display = isSupported ? 'none' : 'block';
+            currentFileKind = fileKind;
+        }
+
+        // ==== LOGIKA UTAMA MEMBACA FILE ====
+        // Ambil raw bytes blob TIFF/EXIF yang udah ada di file (PNG/WEBP/TIFF) - dipakai
+        // buat baca Make/Model existing, karena EXIF.js cuma paham JPEG
+        async function extractExistingTiffBytes(fileKind, file) {
+            const buffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            const dv = new DataView(buffer);
+
+            if (fileKind === 'image-tiff') {
+                return bytes;
+            }
+            if (fileKind === 'image-png') {
+                let offset = 8;
+                while (offset + 8 <= bytes.length) {
+                    const length = dv.getUint32(offset, false);
+                    const type = String.fromCharCode(bytes[offset+4], bytes[offset+5], bytes[offset+6], bytes[offset+7]);
+                    if (type === 'eXIf') return bytes.slice(offset + 8, offset + 8 + length);
+                    if (type === 'IEND') break;
+                    offset += 12 + length;
+                }
+                return null;
+            }
+            if (fileKind === 'image-webp') {
+                let offset = 12;
+                while (offset + 8 <= bytes.length) {
+                    const fourcc = String.fromCharCode(bytes[offset], bytes[offset+1], bytes[offset+2], bytes[offset+3]);
+                    const size = dv.getUint32(offset + 4, true);
+                    if (fourcc === 'EXIF') return bytes.slice(offset + 8, offset + 8 + size);
+                    offset += 8 + size + (size % 2);
+                }
+                return null;
+            }
+            return null;
+        }
+
+        function detectFileKind(file, fileNameLower) {
+            if (file.type === 'image/jpeg' || fileNameLower.match(/\.(jpg|jpeg)$/)) return 'image-jpeg';
+            if (file.type === 'image/png' || fileNameLower.match(/\.png$/)) return 'image-png';
+            if (file.type === 'image/webp' || fileNameLower.match(/\.webp$/)) return 'image-webp';
+            if (file.type === 'image/tiff' || fileNameLower.match(/\.tiff?$/)) return 'image-tiff';
+            return 'unsupported';
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+            currentFile = file; // simpan referensi buat dipakai tombol unduh nanti
+
+            // Reset Antarmuka
+            metadataCard.classList.remove('show');
+            editCard.classList.remove('show');
+            metadataTable.innerHTML = '';
+            editTable.innerHTML = '';
+            previewBox.innerHTML = '';
+            errorBox.style.display = 'none'; 
+            
+            // Tampilkan Skeleton Loading pengganti teks
+            skeletonLoading.classList.add('show');
+
+            setTimeout(async () => {
+                const fileNameLower = file.name.toLowerCase();
+                const isImage = file.type.startsWith('image/') || fileNameLower.match(/\.(jpg|jpeg|png|gif|webp|bmp|tiff)$/);
+
+                // PENOLAKAN JIKA BUKAN FOTO
+                if (!isImage) {
+                    skeletonLoading.classList.remove('show');
+                    errorBox.style.display = 'block';
+                    fileInput.value = ''; 
+                    return; 
+                }
+
+                const fileKind = detectFileKind(file, fileNameLower);
+
+                // Bagian: Informasi Sistem Berkas
+                addTableRow('Informasi Sistem Berkas', '', true);
+                addTableRow('Nama File', file.name); 
+                addTableRow('Ukuran File', formatBytes(file.size));
+                addTableRow('MIME Type', file.type || 'Tidak dikenali browser');
+                addTableRow('Terakhir Dimodifikasi', new Date(file.lastModified).toLocaleString('id-ID'));
+
+                const fileURL = URL.createObjectURL(file);
+
+                const img = new Image();
+                img.src = fileURL;
+
+                img.onload = function() {
+                    addTableRow('Informasi Gambar', '', true);
+                    addTableRow('Resolusi', `${img.naturalWidth} x ${img.naturalHeight} px`);
+                    previewBox.appendChild(img);
+
+                    if (fileKind === 'image-jpeg') {
+                        // JPEG: EXIF.js baca semua tag lengkap
+                        EXIF.getData(file, function() {
+                            const allMetaData = EXIF.getAllTags(this);
+                            if (Object.keys(allMetaData).length > 0) {
+                                addTableRow('Data EXIF Kamera', '', true);
+                                for (let tag in allMetaData) {
+                                    if (tag === 'thumbnail' || tag === 'MakerNote' || tag === 'UserComment') continue;
+                                    let tagValue = allMetaData[tag];
+                                    if (typeof tagValue === 'number') tagValue = Math.round(tagValue * 1000) / 1000;
+                                    addTableRow(tag, tagValue);
+                                }
+                            }
+                            tampilkanHasil();
+                        });
+                    } else if (['image-png', 'image-webp', 'image-tiff'].includes(fileKind)) {
+                        // PNG/WEBP/TIFF: EXIF.js gak paham formatnya, jadi baca native (Make/Model doang)
+                        extractExistingTiffBytes(fileKind, file).then(tiffBytes => {
+                            if (tiffBytes) {
+                                const found = readTiffMakeModel(tiffBytes);
+                                if (found.make || found.model) {
+                                    addTableRow('Data EXIF Kamera', '', true);
+                                    if (found.make) addTableRow('Make', found.make);
+                                    if (found.model) addTableRow('Model', found.model);
+                                }
+                            }
+                            tampilkanHasil();
+                        }).catch(() => tampilkanHasil());
+                    } else {
+                        tampilkanHasil();
+                    }
+                };
+
+                function tampilkanHasil() {
+                    // Sembunyikan Skeleton Loading dan Tampilkan Hasil
+                    skeletonLoading.classList.remove('show');
+                    void metadataCard.offsetWidth; 
+                    metadataCard.classList.add('show');
+
+                    buildEditableCard(fileKind, file.name);
+                    void editCard.offsetWidth;
+                    editCard.classList.add('show');
+                }
+            }, 300); 
+        }
+        // ==== TOMBOL UNDUH: TERAPKAN MAKE/MODEL BARU LALU UNDUH FILE HASILNYA ====
+        // Tentuin nama file hasil unduhan: kalau field "Nama File" diisi -> pakai persis itu
+        // (nempelin ekstensi asli otomatis kalau user lupa nyertain), kalau kosong -> default
+        // "rotate_<nama asli>" (BEDA dari Make/Model - field kosong di sini BUKAN dipakai
+        // literal, karena gak masuk akal nama filenya jadi teks placeholder)
+        function getDownloadFilename(originalName) {
+            const nameInput = document.getElementById('editFilenameInput');
+            const typed = nameInput ? nameInput.value.trim() : '';
+            if (!typed) return 'rotate_' + originalName;
+            const extMatch = originalName.match(/\.[^.]+$/);
+            const ext = extMatch ? extMatch[0] : '';
+            return /\.[^.]+$/.test(typed) ? typed : (typed + ext);
+        }
+
+        downloadBtn.addEventListener('click', async () => {
+            if (!currentFile) return;
+
+            const makeInput = document.getElementById('editMakeInput');
+            const modelInput = document.getElementById('editModelInput');
+            // Kalau user gak isi apa-apa, PAKAI TEKS PLACEHOLDER-nya sendiri sebagai
+            // nilai default ("Meta AI"/"Ray-Ban Meta Smart Glasses") - jadi tombol unduh selalu
+            // bisa jalan tanpa user harus ngetik dulu
+            const makeVal = (makeInput && makeInput.value.trim()) || (makeInput ? makeInput.placeholder : '');
+            const modelVal = (modelInput && modelInput.value.trim()) || (modelInput ? modelInput.placeholder : '');
+
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = 'Memproses...';
+            try {
+                let blob;
+                if (currentFileKind === 'image-jpeg') {
+                    blob = await patchJpegMakeModel(currentFile, makeVal, modelVal);
+                } else if (currentFileKind === 'image-png') {
+                    blob = await patchPngMakeModel(currentFile, makeVal, modelVal);
+                } else if (currentFileKind === 'image-webp') {
+                    blob = await patchWebpMakeModel(currentFile, makeVal, modelVal);
+                } else if (currentFileKind === 'image-tiff') {
+                    blob = await patchTiffMakeModel(currentFile, makeVal, modelVal);
+                } else {
+                    throw new Error('Format file ini belum didukung buat diubah metadatanya.');
+                }
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = getDownloadFilename(currentFile.name);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                console.error('Gagal menerapkan Make/Model baru:', e);
+                alert('Gagal mengubah metadata: ' + e.message);
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = 'Unduh File dengan Metadata Baru';
+            }
+        });
+    </script>
+</body>
+</html>
