@@ -198,6 +198,18 @@ function initAvatarUpload() {
    BAGIAN 5: TOMBOL BAGIKAN (Modal Custom, sama di HP maupun Desktop)
    ====================================================================== */
 
+/**
+ * Handler saat tombol "Bagikan" (id: shareContentBtn) diklik.
+ *
+ * CATATAN PERUBAHAN: sebelumnya di sini ada percabangan native share
+ * (navigator.share) khusus HP vs modal khusus desktop. Sekarang
+ * disederhanakan jadi SATU perilaku untuk semua device -> selalu buka
+ * modal custom. Beda tampilan HP vs desktop cukup diatur lewat CSS
+ * (ukuran/padding modal di media query), bukan lewat JS lagi. Ini
+ * dipilih karena deteksi device via matchMedia/navigator.share ternyata
+ * gak selalu konsisten hasilnya di semua browser/emulator.
+ */
+/**
  * Handler saat tombol "Bagikan" (id: shareContentBtn) diklik.
  *
  * Logika disesuaikan berdasarkan ukuran layar (maks 820px).
@@ -207,9 +219,9 @@ function handleShareClick() {
   if (window.innerWidth <= 820 &&navigator.share) {
     // Layar HP: gunakan navigator.share
     navigator.share({
-      title: 'Simulasi Dolar ke Rupiah',
-      text: 'Simulasikan Dolar ke Rupiah disini:',
-      url: 'https://labsyadidera-beta.vercel.app/projects/Simulasi-perkuat-Rupiah/'
+      title: 'Kurs Dolar ke Rupiah',
+      text: 'Lakukan Simulasi Perkuat Rupiah dengan mudah di sini!',
+      url: 'https://labsyadidera-beta.vercel.app/projects/Simulasi-perkuat-Rupiah/' // Sesuai dengan permintaan
     }).catch((err) => console.error('[Share] Batal atau gagal membagikan:', err));
   } else {
     // Layar Desktop (> 820px): buka modal custom
