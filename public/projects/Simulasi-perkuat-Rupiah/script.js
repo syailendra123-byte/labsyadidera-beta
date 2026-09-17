@@ -208,7 +208,7 @@ function handleShareClick() {
     // Layar HP: gunakan navigator.share
     navigator.share({
       title: 'Simulasi Dolar ke Rupiah',
-      text: 'Simulasikan Dolar ke Rupiah disini: ',
+      text: 'Simulasikan Dolar ke Rupiah disini:',
       url: 'https://labsyadidera-beta.vercel.app/projects/Simulasi-perkuat-Rupiah/'
     }).catch((err) => console.error('[Share] Batal atau gagal membagikan:', err));
   } else {
