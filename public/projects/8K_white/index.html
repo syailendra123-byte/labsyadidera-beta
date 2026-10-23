@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <title>8K White</title>
+  <meta name="description" content="Gambar putih yang sangat bersih, resolusi 8K. Untuk hiburan dan eksperimen pribadi.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <h1>8K White</h1>
+      <p class="subtitle">Gambar putih yang sangat bersih</p>
+    </header>
+
+    <section class="image-section">
+      <figure class="image-wrap">
+        <img
+          id="main-image"
+          src="white.png"
+          alt="Gambar putih bersih resolusi 8K"
+          width="8192"
+          height="6114"
+          decoding="async"
+          role="button"
+          tabindex="0"
+          aria-label="Perbesar gambar"
+        >
+        <figcaption class="hint">Ketuk gambar untuk memperbesar</figcaption>
+      </figure>
+    </section>
+
+    <section class="actions">
+      <a id="download-btn" class="btn-primary" href="white.png" download="8K-white.png">
+        Unduh gambar
+      </a>
+    </section>
+
+    <section class="disclaimer" aria-labelledby="disclaimer-title">
+      <h2 id="disclaimer-title">Disclaimer</h2>
+      <p>
+        Seluruh konten di situs ini disediakan untuk hiburan dan eksperimen pribadi.
+        Website ini bukan layanan profesional, tidak menjamin ketersediaan atau kegunaan file,
+        dan penggunaan gambar sepenuhnya menjadi tanggung jawab pengguna. Kami tidak bertanggung
+        jawab atas setiap kerugian, kerusakan, atau konsekuensi yang mungkin timbul dari
+        penggunaan konten ini. Pengguna setuju untuk menggunakan gambar ini hanya untuk
+        tujuan yang sah dan tidak melanggar hak kekayaan intelektual atau privasi.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Dibuat dengan kegabutan ekstra, dan ribuan piksel putih. Semua konten disini hanya untuk hiburan</p>
+  </footer>
+
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Pratinjau gambar" hidden>
+    <button id="close-modal" class="close-btn" aria-label="Tutup">&times;</button>
+    <img id="modal-image" src="white.png" alt="Gambar putih diperbesar">
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
