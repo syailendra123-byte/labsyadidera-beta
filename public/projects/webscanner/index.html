@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#21df84">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="description" content="Pemindai dokumen gratis tanpa watermark. Semua proses tidak ada diupload ke Server">
+  <title>WebScanner | pemindai dokumen gratis</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app"></div>
+  <div id="overlay"></div>
+  <div id="dialog-host"></div>
+  <div id="toast-host" aria-live="polite"></div>
+
+  <div id="dropzone" class="dropzone" aria-hidden="true"><div class="dropzone-box">Lepaskan foto di sini</div></div>
+  <div id="processing" class="processing" role="status" aria-live="polite" hidden>
+    <div class="processing-card"><span class="spinner" aria-hidden="true"></span><span id="processing-msg"></span></div>
+  </div>
+  <input id="file-input" type="file" accept="image/*" multiple hidden>
+
+  <noscript><p style="padding:24px">WebScanner membutuhkan JavaScript.</p></noscript>
+
+  <script src="src/vendor/pdf-lib.min.js"></script>
+  <script src="src/utils/geometry.js"></script>
+  <script src="src/utils/canvas.js"></script>
+  <script src="src/utils/file.js"></script>
+  <script src="src/utils/download.js"></script>
+  <script src="src/utils/dom.js"></script>
+  <script src="src/state/store.js"></script>
+  <script src="src/features/documentDetection.js"></script>
+  <script src="src/features/perspective.js"></script>
+  <script src="src/features/filters.js"></script>
+  <script src="src/features/fileImport.js"></script>
+  <script src="src/features/dragAndDrop.js"></script>
+  <script src="src/features/imageExport.js"></script>
+  <script src="src/features/pdfExport.js"></script>
+  <script src="src/views/emptyState.js"></script>
+  <script src="src/views/sourcePicker.js"></script>
+  <script src="src/views/camera.js"></script>
+  <script src="src/views/cropEditor.js"></script>
+  <script src="src/views/filterEditor.js"></script>
+  <script src="src/views/documentEditor.js"></script>
+  <script src="src/views/exportModal.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>
